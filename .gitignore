@@ -1,3 +1,7 @@
 # Sublime project stuff
 *.sublime-workspace
 *.sublime-project
+
+# built file stuff
+bin/
+build/
