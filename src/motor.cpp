@@ -343,6 +343,8 @@ void motor::step_onehead(int hd)
 
     }
 
+    // cout<<"\nDEBUG: offrate = "<<offrate;
+
     if ( event(offrate) ) this->detach_head(hd);
     else{
         this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm); // update relative position
