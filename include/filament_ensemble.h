@@ -20,7 +20,7 @@
 #include "string"
 #include "vector"
 #include "map"
-#include "unordered_map"
+//#include <multimap>
 #include "filament.h"
 #include <boost/functional/hash.hpp>
 #include <boost/scoped_array.hpp>
@@ -31,6 +31,11 @@ class filament_ensemble
     public:
         
         filament_ensemble();
+
+        filament_ensemble(int npolymer, int nactins_min, int nactins_max, double nactins_prob,
+                array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+                double rad, double vis, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
+                double frac_force, string bc, double seed);
 
         filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
                 double len, double vis, int nactin,
@@ -56,15 +61,15 @@ class filament_ensemble
 
         void reset_n_links(int);
 
-        void update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y);
+        void update_dist_map(set<pair<double, array<int, 2>>>& t_map, const array<int, 2>& mquad, double x, double y);
         
         vector<filament *> * get_network();
 
         filament * get_filament(int index);
 
-        map<array<int,2>, double> get_dist(double x, double y);
+        set<pair<double, array<int,2>>> get_dist(double x, double y);
         
-        map<array<int,2>, double> get_dist_all(double x, double y);
+        set<pair<double, array<int,2>>> get_dist_all(double x, double y);
         
         array<double,2> get_direction(int fil, int link);
 
@@ -190,6 +195,7 @@ class filament_ensemble
         
         vector<array<int, 2>* > all_quads;
         vector<filament *> network;
+        unordered_set<array<int, 2>, boost::hash<array<int,2>>> fls;
 };
 
 #endif

@@ -68,7 +68,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     kb = bending_stiffness;
     kinetic_energy  = 0;
     
-    damp = 4*pi*actinRadius*visc;
+    damp = 6*pi*actinRadius*visc;
     y_thresh = 1;
     
     bd_prefactor = sqrt(temperature/(2*dt*damp));
@@ -93,6 +93,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
         prv_rnds.push_back({0,0});
         links.push_back( new Link(linkLength, stretching_stiffness, max_ext_ratio, this, {j-1, j}, fov, nq) );  
         links[j-1]->step(BC, delrx);  
+        links[j-1]->update_force(BC, delrx);
         
         // Calculate the Next angle on the actin polymer
         if (!isStraight) phi += rng_n(0, variance);
@@ -116,7 +117,7 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
     fov = myfov;
     nq = mynq;
     y_thresh = 1;
-
+    kinetic_energy = 0;
 
     if (actinvec.size() > 0)
     {
@@ -132,6 +133,7 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
             actins.push_back(new actin(*(actinvec[j])));
             links.push_back( new Link(linkLength, stretching_stiffness, max_ext_ratio, this, {(int)j-1, (int)j}, fov, nq) );  
             links[j-1]->step(BC, delrx);
+            links[j-1]->update_force(BC, delrx);
             prv_rnds.push_back({0,0});
             
         }
@@ -418,11 +420,11 @@ vector<filament *> filament::fracture(int node){
 
     if (lower_half.size() > 0)
         newfilaments.push_back(
-                new filament(lower_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
+                new filament(lower_half, fov, nq, links[0]->get_l0(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
                     dt, temperature, fracture_force, gamma, BC));
     if (upper_half.size() > 0)
         newfilaments.push_back(
-                new filament(upper_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
+                new filament(upper_half, fov, nq, links[0]->get_l0(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
                     dt, temperature, fracture_force, gamma, BC));
 
     for (int i = 0; i < (int)(lower_half.size()); i++) delete lower_half[i];
