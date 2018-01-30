@@ -23,6 +23,11 @@
 #include <boost/range/irange.hpp>
 #include <boost/range/join.hpp>
 #include <boost/optional.hpp>
+#include <boost/functional/hash.hpp>
+#define BOOST_NO_CXX11_SCOPED_ENUMS
+#include <boost/filesystem.hpp>
+#undef BOOST_NO_CXX11_SCOPED_ENUMS
+
 //#include "iomanip"
 #include <math.h>
 #include "fstream"
@@ -34,14 +39,17 @@
 #include <stdio.h>
 #include <array>
 #include <map>
+#include <unordered_map>
 #include <algorithm> //std::for_each
 #include <unordered_set>
+#include <set>
 #include <limits>
 #include <cstddef>
 // #include <omp.h>
 #include <random>
 
 using namespace std;
+namespace fs = boost::filesystem;
 
 /* distances in microns, time in seconds, forces in pN * 
  * --> Temp in pN-um                                   */
@@ -85,6 +93,7 @@ int coord2quad(double fov, int nq, double pos);
 double my_velocity(double vel0, double force, double fstall);
 double cross(double ax, double ay, double bx, double by);
 double dot(double x1, double y1, double x2, double y2);
+double cross(const array<double, 2>& v1, const array<double, 2>& v2);
 double dot(const array<double, 2>& v1, const array<double, 2>& v2);
 
 double angBC(double ang);
@@ -98,11 +107,16 @@ vector<double *> vec2ptrvec(const vector<double>&, int dim);
 vector<double *> str2ptrvec(string, string, string);
 vector<array<double,3> > str2arrvec(string, string, string);
 vector<vector<double> > file2vecvec(string path, string delim);
+vector<vector<double> > traj2vecvec(string path, string delim, double tf);
+double last_full_timestep(string dirpath);
+void write_first_nlines(string path, int n);
+void write_first_ntsteps(string path, int n);
+void write_first_tsteps(string path, double tstop);
 
 template <typename T> int sgn(T val);
 
 pair<double, array<int, 2> > flip_pair(const pair<array<int, 2>, double> &p);
-multimap<double, array<int, 2> > flip_map(const map<array<int, 2>, double> &p);
+multimap<double, array<int, 2> > flip_map(const std::unordered_map<array<int, 2>, double, boost::hash<array<int,2>>> &p);
 string print_pair(string name, const array<double, 2>& p);
 
 //template <typename A, typename B> pair<B,A> flip_pair(const pair<A,B> &p);
@@ -114,5 +128,8 @@ void intarray_printer(array<int,2> a);
 
 boost::optional<array<double, 2> > seg_seg_intersection(const array<double, 2>&, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&);
 boost::optional<array<double, 2> > seg_seg_intersection_bc(string, double, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&);
-
+std::string quads_error_message(std::string, vector<array<int, 2> >, vector<array<int, 2> > );
 #endif
+
+
+

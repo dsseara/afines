@@ -31,7 +31,7 @@ filament_ensemble::~filament_ensemble(){
             delete links_per_quad[x]->at(y);
         }
         delete links_per_quad[x];
-        delete n_links_per_quad[x];
+        //delete n_links_per_quad[x];
     }
     
     for (int i = 0; i < s; i++){
@@ -62,11 +62,9 @@ void filament_ensemble::turn_quads_off()
 void filament_ensemble::nlist_init_serial()
 {
     for (int x = 0; x < nq[0]; x++){
-        links_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]+1));   
-        n_links_per_quad.push_back(new vector<int>(nq[1]+1));
+        links_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]));   
         for (int y = 0; y < nq[1]; y++){
-            links_per_quad[x]->at(y) = new vector<array<int, 2> >(max_links_per_quad);
-            n_links_per_quad[x]->at(y) = 0;
+            links_per_quad[x]->at(y) = new vector<array<int, 2> >();
         }
     }
 }
@@ -77,9 +75,13 @@ void filament_ensemble::quad_update_serial()
     int n_quads, net_sz = int(network.size());
     vector<vector<array<int, 2> > > q;
     int x, y;
-    for (x = 0; x < nq[0]; x++)
-        for (y = 0; y < nq[1]; y++)
-            n_links_per_quad[x]->at(y) = 0;
+
+    //initialize all quadrants to have no links
+    for (x = 0; x < nq[0]; x++){
+        for (y = 0; y < nq[1]; y++){
+            links_per_quad[x]->at(y)->clear();
+        }
+    }
     
     for (int f = 0; f < net_sz; f++){
         q = network[f]->get_quadrants();
@@ -88,61 +90,76 @@ void filament_ensemble::quad_update_serial()
             for (int i = 0; i < n_quads; i++){
                 x = q[l][i][0];
                 y = q[l][i][1];
-                links_per_quad[x]->at(y)->at( n_links_per_quad[x]->at(y) ) = {f,l};
-                n_links_per_quad[x]->at(y)++;
+                links_per_quad[x]->at(y)->push_back({f,l});
+                
             }
         }
     }
 
 }
 
-
-void filament_ensemble::update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mq, double x, double y){
+//given a motor position, and a quadrant
+//update the map of {f, l} -- > dist
+void filament_ensemble::update_dist_map(set<pair<double, array<int,2>>>& t_map, const array<int, 2>& mq, double x, double y){
     
     array<int, 2> fl;
-    if(n_links_per_quad[mq[0]]->at(mq[1]) != 0 ){
-        
-        for (int i = 0; i < n_links_per_quad[mq[0]]->at(mq[1]); i++){
+    double dist;
+    
+    for (int i = 0; i < int(links_per_quad[mq[0]]->at(mq[1])->size()); i++){
 
-            fl = links_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, link_index}
-            
-            if (t_map.find(fl) == t_map.end()){ 
-                network[fl[0]]->get_link(fl[1])->calc_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
-                t_map[fl] = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
-            }
+        fl = links_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, link_index}
+
+        if (fls.find(fl) == fls.end()){
+            network[fl[0]]->get_link(fl[1])->calc_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
+            dist = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
+            //cout<<"\nDEBUG : dist = "<<dist;
+
+            t_map.insert(pair<double, array<int, 2> >(dist, fl));
+            fls.insert(fl);
         }
     }
 
 }
 
 //given motor head position, return a map between  
-//  the INDICES (i.e., {i, j} where i is the filament index and j is the link index)
+//  the INDICES (i.e., {i, j} for the j'th link of the i'th filament)
 //  and their corresponding DISTANCES to the link at that distance 
 
-map<array<int,2>,double> filament_ensemble::get_dist(double x, double y)
+set<pair<double, array<int, 2>>> filament_ensemble::get_dist(double x, double y)
 {
-    map<array<int, 2>, double> t_map;
-    int mqx = min(coord2quad_floor(fov[0], nq[0], x), nq[0] - 1);
-    int mqy = min(coord2quad_floor(fov[1], nq[1], y), nq[1] - 1);
+    fls.clear();
+    set<pair<double, array<int, 2>>> t_map;
+    int mqx = coord2quad_floor(fov[0], nq[0], x);
+    int mqy = coord2quad_floor(fov[1], nq[1], y);
+    
+    int xp1 = mqx + 1;
+    int yp1 = mqy + 1;
+
+    if (xp1 >= nq[0] && (network[0]->get_BC() == "PERIODIC" || network[0]->get_BC() == "LEES-EDWARDS")) xp1 = 0;
+    if (yp1 >= nq[1] && (network[0]->get_BC() == "PERIODIC" || network[0]->get_BC() == "LEES-EDWARDS")) yp1 = 0;
+    
     update_dist_map(t_map, {mqx, mqy}, x, y);
-    if (mqx + 1 < nq[0])
-        update_dist_map(t_map, {mqx + 1, mqy}, x, y);
-    if (mqy + 1 < nq[1])
-        update_dist_map(t_map, {mqx, mqy + 1}, x, y);
-    if (mqx + 1 < nq[0] && mqy + 1 < nq[1])
-        update_dist_map(t_map, {mqx + 1, mqy + 1}, x, y);
+    if (xp1 < nq[0]) 
+        update_dist_map(t_map, {xp1, mqy}, x, y);
+    if (yp1 < nq[1]) 
+        update_dist_map(t_map, {mqx, yp1}, x, y);
+    if (xp1 < nq[0] && yp1 < nq[1])
+        update_dist_map(t_map, {xp1, yp1}, x, y);
 
     return t_map;
 }
 
 
-map<array<int,2>,double> filament_ensemble::get_dist_all(double x, double y)
+set<pair<double, array<int,2>>> filament_ensemble::get_dist_all(double x, double y)
 {
-    map<array<int, 2>, double> t_map;
+    set<pair<double, array<int,2>>> t_map;
+    double dist=0;
     for (int f = 0; f < int(network.size()); f++){
         for (int l=0; l < network[f]->get_nlinks(); l++){
                 network[f]->get_link(l)->calc_intpoint(network[f]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
-                t_map[{f,l}] = network[f]->get_link(l)->get_distance(network[f]->get_BC(), delrx, x, y); //store the distance to that point
+                dist = network[f]->get_link(l)->get_distance(network[f]->get_BC(), delrx, x, y); //store the distance to that point
+                // t_map[dist] = {f,l}; 
+                t_map.insert(pair<double, array<int, 2>>(dist, {f, l}));
         }
     }
     
@@ -533,6 +550,74 @@ vector<vector<double> > filament_ensemble::link_link_intersections(double len, d
 ///SPECIFIC FILAMENT IMPLEMENTATIONS////
 ////////////////////////////////////////
 
+filament_ensemble::filament_ensemble(int npolymer, int nactins_min, int nactins_extra, double nactins_extra_prob, 
+        array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+        double rad, double vis, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
+        double frac_force, string bc, double seed) {
+    
+    fov = myfov;
+    view[0] = 1;//(fov[0] - 2*nactins*link_len)/fov[0];
+    view[1] = 1;//(fov[1] - 2*nactins*link_len)/fov[1];
+    nq = mynq;
+    half_nq = {nq[0]/2, nq[1]/2};
+    
+    double nactins_mean = nactins_min + nactins_extra*nactins_extra_prob;
+    
+    visc=vis;
+    link_ld = link_len;
+    dt = delta_t;
+    temperature = temp;
+    shear_stop = 1e10;
+    shear_dt = dt;
+    t = 0;
+    delrx = 0;
+    
+    if (seed == -1){
+        straight_filaments = true;
+    }else{
+        srand(seed);
+    }
+    
+    
+    cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
+    cout<<"DEBUG: Avg number of monomers per filament:"<<nactins_mean<<"\n"; 
+    cout<<"DEBUG: Monomer Length:"<<rad<<"\n"; 
+   
+    int nactins = 0;
+    binomial_distribution<int> distribution(nactins_extra, nactins_extra_prob);
+    default_random_engine generator(seed+2);
+
+    int s = pos_sets.size();
+    double x0, y0, phi0;
+    for (int i=0; i<npolymer; i++) {
+        if ( i < s ){
+            network.push_back(new filament(pos_sets[i], nactins, fov, nq,
+                        visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
+        }else{
+            x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
+            y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
+            phi0 =  rng(0, 2*pi);
+            
+            nactins = nactins_min + distribution(generator);
+            network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
+        }
+    }
+    
+    //Neighbor List Initialization
+    quad_off_flag = false;
+    max_links_per_quad              = npolymer*(nactins-1);
+    max_links_per_quad_per_filament = nactins - 1;
+    
+    //this->nlist_init();
+    this->nlist_init_serial();
+    
+    pe_stretch = 0;
+    pe_bend = 0;
+    ke = 0;
+    
+    fls = { };
+}
+
 filament_ensemble::filament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
         double rad, double vis, int nactins, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
         double frac_force, string bc, double seed) {
@@ -591,7 +676,8 @@ filament_ensemble::filament_ensemble(double density, array<double,2> myfov, arra
     pe_stretch = 0;
     pe_bend = 0;
     ke = 0;
-
+    
+    fls = { };
 }
 
 filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
@@ -642,4 +728,7 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
     max_links_per_quad_per_filament = int(ceil(actins.size() / (fil_idx + 1)))- 1;
     //this->nlist_init();
     this->nlist_init_serial();
+    this->update_energies();
+    
+    fls = { };
 } 

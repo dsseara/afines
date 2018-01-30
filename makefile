@@ -12,7 +12,7 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 OBJECTS_DEBUG := $(patsubst $(SRCDIR)/%,$(BUILDDIR_DEBUG)/%,$(SOURCES:.$(SRCEXT)=.o))
 
-CFLAGS := -O3 -Wall -Wno-missing-braces -Wno-unused-local-typedef -std=c++11 -DBOOST_TEST_DYN_LINK # -fopenmp
+CFLAGS := -O3 -Wall -Wno-missing-braces -Wno-unused-local-typedefs -Wno-deprecated-declarations -std=c++11 -DBOOST_TEST_DYN_LINK # -fopenmp
 CFLAGS_DEBUG := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -pg 
 
 # BOOST_SUFFIX := -mt
@@ -42,7 +42,7 @@ clean_debug:
 	    @echo " $(RM) -r $(BUILDDIR_DEBUG) $(TARGET)"; $(RM) -r $(BUILDDIR_DEBUG) $(TARGET)
 
 tar:
-	tar -cvzf tars/afines.tar.gz src/*.cpp include/*.h prog/network.cpp makefile
+	tar -cvzf tars/afines.tar.gz src/*.cpp include/*.h prog/*.cpp test/*.cpp makefile
 
 # Programs
 network: $(OBJECTS)
@@ -62,6 +62,10 @@ network_pull: $(OBJECTS)
 2fil: $(OBJECTS)
 	mkdir -p $(TARGETDIR)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/2fil.cpp $(INC) $(LIB) -o bin/2f
+motorwalk: $(OBJECTS)
+	mkdir -p $(TARGETDIR)
+	$(CC) $(CFLAGS) $(OBJECTS) prog/motors_on_struct.cpp $(INC) $(LIB) -o bin/motor_walk
+
 
 # Tests
 actin_tester: $(OBJECTS)
@@ -81,7 +85,6 @@ motor_tester: $(OBJECTS)
 
 motor_ensemble_tester: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) test/motor_ensemble_test.cpp $(INC) $(LIB) -o bin/motor_ensemble_tester
-
 
 test:actin_tester link_tester filament_tester motor_tester # filament_ensemble_tester motor_ensemble_tester
 
