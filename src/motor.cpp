@@ -33,7 +33,8 @@ motor::motor( array<double, 3> pos,
         double max_ext_ratio,
         double ron, double roff, double rend,
         double fstall, double rcut,
-        double vis, string bc) {
+        double vis, double catchlength,
+        string bc) {
 
     vs          = v0;
     mk          = stiffness;//rng(10,100);
@@ -41,6 +42,7 @@ motor::motor( array<double, 3> pos,
     temperature   = temp;
     max_bind_dist = rcut;
 
+    catch_length = catchlength; // Characteristic catch-bond length. See Guo, PNAS 2006
     mld         = mlen;
     dt          = delta_t;
     kon         = ron*dt;
@@ -118,15 +120,16 @@ motor::motor( array<double, 4> pos,
         double max_ext_ratio,
         double ron, double roff, double rend,
         double fstall, double rcut,
-        double vis, string bc) {
+        double vis, double catchlength,
+        string bc) {
 
     vs          = v0;
     mk          = stiffness;
 
     stall_force = fstall;
     temperature = temp;
-
     max_bind_dist = rcut;
+    catch_length = catchlength; // Characteristic catch-bond length. See Guo, PNAS 2006
 
     mld         = mlen;
     dt          = delta_t;
@@ -411,8 +414,8 @@ void motor::step_onehead(int hd)
     array<double, 2> hpos_new = generate_off_pos(hd);
     double off_prob = metropolis_prob(hd, {0,0}, hpos_new, at_barbed_end[hd] ? kend : koff);
 
-    // if (tension > 0 && vs != 0)
-    //     off_prob *= exp(tension/break_force);
+    if (tension > 0 && vs != 0)
+        off_prob *= exp(tension*catch_length/temperature);
 
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
