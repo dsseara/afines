@@ -82,6 +82,7 @@ Edited by Daniel Seara (Yale), 02/06/2018
 
 
 Create an output directory for your simulation. e.g. on Grace you could use:
+
     ```
         $ mkdir ~/project/YYMMDD/SIMNAME
     ```
