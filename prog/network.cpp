@@ -118,7 +118,7 @@ int main(int argc, char* argv[]){
         ("a_motor_stiffness", po::value<double>(&a_motor_stiffness)->default_value(1),"active motor spring stiffness (pN/um)")
         ("a_motor_v", po::value<double>(&a_motor_v)->default_value(1),"active motor velocity (um/s)")
 
-        ("a_m_stall", po::value<double>(&a_m_stall)->default_value(0.5),"force beyond which motors don't walk (pN)")
+        ("a_m_stall", po::value<double>(&a_m_stall)->default_value(10),"force beyond which motors don't walk (pN)")
         ("a_m_cut", po::value<double>(&a_m_cut)->default_value(0.063),"cutoff distance for binding (um)")
         ("a_motor_lcatch", po::value<double>(&a_motor_lcatch)->default_value(0.0016),"characteristic catch length for single motor head (um)")
 
