@@ -46,7 +46,7 @@ Edited by Daniel Seara (Yale), 02/06/2018
         $ mkdir bin
     ```
 
-* Edit makefile using your favorite command line based editor (vim, emacs, etc) to add the following to line 20 (or whatever line starts with `INC`)
+* Edit makefile using your favorite command line based editor (vim, emacs, etc) to add the following to line 20 (or whatever line starts with `INC :=`)
     ```
         $ -I gpfs/apps/hpc/Libs/Boost/1.59.0/include
     ```
@@ -89,18 +89,21 @@ Replacing `YYMMDD` with today's date, and `SIMNAME` is whatever you want to call
 
 There are two ways to run simulations, either directly from the command line, or by using a configuration file.
 
-### Command line example###
+### Command line example ###
 
 For example, to run a 500 second of simulation of 10 rigid actin filaments, an active motor density of 0.5 and a crosslinker density of 0.05 you would enter the command:
+
     ```
         $ cd ~/afines/
         $ ./bin/afines --tf 500 --npolymer 10 --a_motor_density 0.5 --p_motor_density 0.05 --dir /project/fas/murrell/dss86/YYMMDD/SIMNAME
     ```
+
 *Note that you have to be in the `afines` folder for `./bin/afines` to work. If you are not in that folder, specify the full path to the `bin/afines` executable instead.*
 
-### Configuration file example###
+### Configuration file example ###
 Below is an example of a configuration file named `example.cfg`.
 To run a simulation using this configuration, enter the command
+
     ```
         $ cd ~/afines/
         $ ./bin/afines -c /path/to/example.cfg
