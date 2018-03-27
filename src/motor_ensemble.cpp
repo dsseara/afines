@@ -22,7 +22,8 @@ motor_ensemble::motor_ensemble(double mdensity, array<double, 2> myfov, double d
         double mlen, filament_ensemble * network, double v0, double stiffness, double max_ext_ratio,
         double ron, double roff, double rend,
         double fstall, double rcut,
-        double vis, double catchlength, vector<array<double,3> > positions, string BC) {
+        double vis, double catchlength, double fractureforce, vector<array<double,3> > positions,
+        string BC) {
 
     fov = myfov;
     mld =mlen;
@@ -53,7 +54,8 @@ motor_ensemble::motor_ensemble(double mdensity, array<double, 2> myfov, double d
         motor_pos = {motorx, motory, mang};
 
         n_motors.push_back(new motor( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp,
-                    v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, catchlength, BC));
+                    v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, catchlength,
+                    fractureforce, BC));
 
     }
 }
@@ -63,7 +65,7 @@ motor_ensemble::motor_ensemble(vector<vector<double> > motors, array<double, 2> 
         double mlen, filament_ensemble * network, double v0, double stiffness, double max_ext_ratio,
         double ron, double roff, double rend,
         double fstall, double rcut,
-        double vis, double catchlength, string BC) {
+        double vis, double catchlength, double fractureforce, string BC) {
 
     fov = myfov;
     mld = mlen;
@@ -91,7 +93,8 @@ motor_ensemble::motor_ensemble(vector<vector<double> > motors, array<double, 2> 
         state = {f_index[0] == -1 && l_index[0] == -1 ? 0 : 1, f_index[1] == -1 && l_index[1] == -1 ? 0 : 1};
 
         n_motors.push_back(new motor( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp,
-                    v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, catchlength, BC));
+                    v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, catchlength,
+                    fractureforce, BC));
     }
 
     this->update_energies();

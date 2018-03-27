@@ -30,38 +30,48 @@ int main(int argc, char* argv[]){
 
     int myseed;
 
-    double xrange, yrange;                                                  //Space
+    // Space
+    double xrange, yrange;
     int xgrid, ygrid;
     double grid_factor;
 
-    int    count, nframes, nmsgs, n_bw_shear;                                  //Time
+    // Time
+    int count, nframes, nmsgs, n_bw_shear;
     double t, tinit, tfinal, dt;
 
-    double viscosity, temperature;                                          //Environment
-    string bnd_cnd;                                         //Allowed values: NONE, PERIODIC, REFLECTIVE
+    // Environment
+    double viscosity, temperature;
 
-    int npolymer, nmonomer, nmonomer_extra;                                                               // Actin
+    // Boundary Conditions
+    // Allowed values: NONE, PERIODIC, REFLECTIVE
+    string bnd_cnd;
+
+    // Actin parameters
+    int npolymer, nmonomer, nmonomer_extra;
     double actin_length, extra_bead_prob;
-
     string actin_pos_str;
 
-    double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force; // Links
+    // Link parameters
+    double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, link_fracture_force;
 
-    double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_motor_lcatch,
-            a_m_kon, a_m_kend, a_m_koff, a_m_stall, a_m_cut; // Active Motors (i.e., "myosin")
+    // Active motor (i.e. myosin) parameters
+    double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_motor_lcatch, a_m_kon, a_m_kend, a_m_koff, a_m_stall, a_m_cut, a_m_fracture_force;
     string a_motor_pos_str;
 
-    double p_motor_length, p_motor_v, p_motor_density, p_motor_stiffness, p_motor_lcatch,
-            p_m_kon, p_m_kend, p_m_koff, p_m_stall, p_m_cut; // Passive Mtors (i.e., cross_linkers)
+    // Passive motor (i.e. cross-linkers) parameters
+    double p_motor_length, p_motor_v, p_motor_density, p_motor_stiffness, p_motor_lcatch, p_m_kon, p_m_kend, p_m_koff, p_m_stall, p_m_cut, p_m_fracture_force;
     string p_motor_pos_str;
 
-    string config_file, actin_in, a_motor_in, p_motor_in;                                                // Input configuration
+    // Input configuration
+    string config_file, actin_in, a_motor_in, p_motor_in;
 
-    string   dir, tdir, ddir,  afile,  amfile,  pmfile,  lfile, thfile, pefile;                  // Output
+    // Output
+    string   dir, tdir, ddir,  afile,  amfile,  pmfile,  lfile, thfile, pefile;
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th, file_pe;
     ios_base::openmode write_mode = ios_base::out;
 
-    double strain_pct, time_of_strain, pre_strain, d_strain_pct, d_strain_amp;                                      //External Force
+    // External Force
+    double strain_pct, time_of_strain, pre_strain, d_strain_pct, d_strain_amp;
     double d_strain, prev_d_strain, d_strain_freq, time_of_dstrain;
     bool link_intersect_flag, motor_intersect_flag, dead_head_flag, p_dead_head_flag, static_cl_flag, quad_off_flag;
     bool diff_strain_flag, osc_strain_flag;
@@ -71,7 +81,7 @@ int main(int argc, char* argv[]){
     bool restart;
     double restart_time;
 
-    //Options allowed only on command line
+    // Options allowed only on command line
     po::options_description generic("Generic options");
     generic.add_options()
         ("version, v", "print version string")
@@ -79,7 +89,7 @@ int main(int argc, char* argv[]){
         ("config,c", po::value<string>(&config_file)->default_value("config/network.cfg"), "name of a configuration file")
         ;
 
-    //Options allowed in a config file
+    // Options allowed in a config file
     po::options_description config("Configuration");
     config.add_options()
 
@@ -121,7 +131,7 @@ int main(int argc, char* argv[]){
         ("a_m_stall", po::value<double>(&a_m_stall)->default_value(10),"force beyond which motors don't walk (pN)")
         ("a_m_cut", po::value<double>(&a_m_cut)->default_value(0.063),"cutoff distance for binding (um)")
         ("a_motor_lcatch", po::value<double>(&a_motor_lcatch)->default_value(0.0016),"characteristic catch length for single motor head (um)")
-
+        ("a_m_fracture_force", po::value<double>(&a_m_fracture_force)->default_value(1), "tension force beyond which an amotor head detaches with probability 1 (pN)")
 
         ("p_m_kon", po::value<double>(&p_m_kon)->default_value(1),"passive motor on rate")
         ("p_m_koff", po::value<double>(&p_m_koff)->default_value(0.1),"passive motor off rate")
@@ -133,11 +143,11 @@ int main(int argc, char* argv[]){
         ("p_m_stall", po::value<double>(&p_m_stall)->default_value(0),"force beyond which xlinks don't walk (pN)")
         ("p_m_cut", po::value<double>(&p_m_cut)->default_value(0.063),"cutoff distance for binding (um)")
         ("p_motor_lcatch", po::value<double>(&p_motor_lcatch)->default_value(0.0016),"characteristic catch length for single motor head (um)")
-
+        ("p_m_fracture_force", po::value<double>(&p_m_fracture_force)->default_value(1), "tension force beyond which a pmotor detaches with probability 1 (pN)")
 
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.068), "Bending modulus of a filament")
-        ("fracture_force", po::value<double>(&fracture_force)->default_value(100000000), "pN-- filament breaking point")
+        ("link_fracture_force", po::value<double>(&link_fracture_force)->default_value(100000000), "pN-- filament breaking point")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("fene_pct", po::value<double>(&fene_pct)->default_value(0.5), "pct of rest length of filament to allow outstretched until fene blowup")
 
@@ -331,12 +341,12 @@ int main(int argc, char* argv[]){
     if (actin_pos_vec.size() == 0 && actin_in.size() == 0){
         net = new filament_ensemble(npolymer, nmonomer, nmonomer_extra, extra_bead_prob, {xrange, yrange}, {xgrid, ygrid}, dt,
                 temperature, actin_length, viscosity, link_length, actin_position_arrs, link_stretching_stiffness, fene_pct, link_bending_stiffness,
-                fracture_force, bnd_cnd, myseed);
+                link_fracture_force, bnd_cnd, myseed);
     }else{
         net = new filament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt,
                 temperature, viscosity, link_length,
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
-                fracture_force, bnd_cnd);
+                link_fracture_force, bnd_cnd);
     }
 
     if (link_intersect_flag) p_motor_pos_vec = net->link_link_intersections(p_motor_length, p_linkage_prob);
@@ -349,11 +359,11 @@ int main(int argc, char* argv[]){
     if (a_motor_pos_vec.size() == 0 && a_motor_in.size() == 0)
         myosins = new motor_ensemble( a_motor_density, {xrange, yrange}, dt, temperature,
                 a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
-                a_m_kend, a_m_stall, a_m_cut, viscosity, a_motor_lcatch, a_motor_position_arrs, bnd_cnd);
+                a_m_kend, a_m_stall, a_m_cut, viscosity, a_motor_lcatch, a_m_fracture_force, a_motor_position_arrs, bnd_cnd);
     else
         myosins = new motor_ensemble( a_motor_pos_vec, {xrange, yrange}, dt, temperature,
                 a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
-                a_m_kend, a_m_stall, a_m_cut, viscosity, a_motor_lcatch, bnd_cnd);
+                a_m_kend, a_m_stall, a_m_cut, viscosity, a_motor_lcatch, a_m_fracture_force, bnd_cnd);
     if (dead_head_flag) myosins->kill_heads(dead_head);
 
     cout<<"Adding passive motors (crosslinkers) ...\n";
@@ -362,11 +372,11 @@ int main(int argc, char* argv[]){
     if(p_motor_pos_vec.size() == 0 && p_motor_in.size() == 0)
         crosslks = new motor_ensemble( p_motor_density, {xrange, yrange}, dt, temperature,
                 p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff,
-                p_m_kend, p_m_stall, p_m_cut, viscosity, p_motor_lcatch, p_motor_position_arrs, bnd_cnd);
+                p_m_kend, p_m_stall, p_m_cut, viscosity, p_motor_lcatch, p_m_fracture_force, p_motor_position_arrs, bnd_cnd);
     else
         crosslks = new motor_ensemble( p_motor_pos_vec, {xrange, yrange}, dt, temperature,
                 p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff,
-                p_m_kend, p_m_stall, p_m_cut, viscosity, p_motor_lcatch, bnd_cnd);
+                p_m_kend, p_m_stall, p_m_cut, viscosity, p_motor_lcatch, p_m_fracture_force, bnd_cnd);
 
     if (p_dead_head_flag) crosslks->kill_heads(p_dead_head);
 
