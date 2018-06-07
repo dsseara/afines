@@ -233,6 +233,15 @@ void motor_ensemble::motor_write(ostream& fout)
     }
 }
 
+void motor_ensemble::vm_write(ostream& fout)
+{
+    for (unsigned int i=0; i<n_motors.size(); i++) {
+        fout<<n_motors[i]->writevm();
+    }
+
+
+}
+
 
 void motor_ensemble::add_motor(motor * m)
 {

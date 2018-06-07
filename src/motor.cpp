@@ -432,10 +432,12 @@ void motor::step_onehead(int hd)
         //calculate motor velocity
         if (vs != 0 && !(at_barbed_end[hd])){
             double vm = vs;
+            vm_store = 0;
             if (state[pr(hd)] != 0){
                 vm = my_velocity(vs,
                         pow(-1, hd)*dot(force, actin_network->get_direction(f_index[hd], l_index[hd])),
                         stall_force);
+                vm_store = vm;
             }
             this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm); // update relative position
         }
@@ -600,4 +602,10 @@ string motor::write()
         +  "\t" + std::to_string(disp[0]) + "\t" + std::to_string(disp[1])
         +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1])
         +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1]);
+}
+
+string motor::writevm()
+{
+    if(vm_store != 0) 
+        return "\n" + std::to_string(vm_store);
 }

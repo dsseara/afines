@@ -66,7 +66,7 @@ int main(int argc, char* argv[]){
     string config_file, actin_in, a_motor_in, p_motor_in;
 
     // Output
-    string   dir, tdir, ddir,  afile,  amfile,  pmfile,  lfile, thfile, pefile;
+    string   dir, tdir, ddir,  afile,  amfile, vmfile,  pmfile,  lfile, thfile, pefile;
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th, file_pe;
     ios_base::openmode write_mode = ios_base::out;
 
@@ -244,6 +244,7 @@ int main(int argc, char* argv[]){
     pmfile = tdir + "/pmotors.txt";
     thfile = ddir + "/filament_e.txt";
     pefile = ddir + "/pe.txt";
+    vmfile = ddir + "/vmfile.txt"
 
     if(fs::create_directory(dir1)) cerr<< "Directory Created: "<<afile<<std::endl;
     if(fs::create_directory(dir2)) cerr<< "Directory Created: "<<thfile<<std::endl;
@@ -321,6 +322,7 @@ int main(int argc, char* argv[]){
     file_pm.open(pmfile.c_str(), write_mode);
 	file_th.open(thfile.c_str(), write_mode);
 	file_pe.open(pefile.c_str(), write_mode);
+    file_vm.open(vmfile.c_str(), write_mode);
 
 
     // DERIVED QUANTITIES :
@@ -445,12 +447,15 @@ int main(int argc, char* argv[]){
             file_pe << net->get_stretching_energy()<<"\t"<<net->get_bending_energy()<<"\t"<<
                 myosins->get_potential_energy()<<"\t"<<crosslks->get_potential_energy()<<endl;
 
+            myosins->vm_write(file_vm);
+
             file_a<<std::flush;
             file_l<<std::flush;
             file_am<<std::flush;
             file_pm<<std::flush;
             file_th<<std::flush;
             file_pe<<std::flush;
+            file_vm<<std::flush;
 
 		}
 
@@ -512,6 +517,7 @@ int main(int argc, char* argv[]){
     file_am << "\n";
     file_pm << "\n";
     file_th << "\n";
+    file_am << "\n";
 
     file_a.close();
     file_l.close();
@@ -519,6 +525,7 @@ int main(int argc, char* argv[]){
     file_pm.close();
     file_th.close();
     file_pe.close();
+    file_am.close();
     //Delete all objects created
     cout<<"\nHere's where I think I delete things\n";
 
