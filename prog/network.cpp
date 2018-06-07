@@ -67,7 +67,7 @@ int main(int argc, char* argv[]){
 
     // Output
     string   dir, tdir, ddir,  afile,  amfile, vmfile,  pmfile,  lfile, thfile, pefile;
-    ofstream o_file, file_a, file_am, file_pm, file_l, file_th, file_pe;
+    ofstream o_file, file_a, file_am, file_vm, file_pm, file_l, file_th, file_pe;
     ios_base::openmode write_mode = ios_base::out;
 
     // External Force
@@ -244,7 +244,7 @@ int main(int argc, char* argv[]){
     pmfile = tdir + "/pmotors.txt";
     thfile = ddir + "/filament_e.txt";
     pefile = ddir + "/pe.txt";
-    vmfile = ddir + "/vmfile.txt"
+    vmfile = ddir + "/vmfile.txt";
 
     if(fs::create_directory(dir1)) cerr<< "Directory Created: "<<afile<<std::endl;
     if(fs::create_directory(dir2)) cerr<< "Directory Created: "<<thfile<<std::endl;
@@ -447,6 +447,7 @@ int main(int argc, char* argv[]){
             file_pe << net->get_stretching_energy()<<"\t"<<net->get_bending_energy()<<"\t"<<
                 myosins->get_potential_energy()<<"\t"<<crosslks->get_potential_energy()<<endl;
 
+            file_vm << time_str;
             myosins->vm_write(file_vm);
 
             file_a<<std::flush;
@@ -525,7 +526,7 @@ int main(int argc, char* argv[]){
     file_pm.close();
     file_th.close();
     file_pe.close();
-    file_am.close();
+    file_vm.close();
     //Delete all objects created
     cout<<"\nHere's where I think I delete things\n";
 

@@ -119,11 +119,11 @@ class motor
 
     public:
 
-        double mphi,mld, vs, vm_store, stall_force, max_bind_dist, mk, kon, koff, kend, dt, temperature,
+        double mphi,mld, vs, stall_force, max_bind_dist, mk, kon, koff, kend, dt, temperature,
                damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension, catch_length,
                fracture_force;
 
-        array<double,2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp;
+        array<double,2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp, vm_store;
 
         array<array<double, 2>, 2> ldir_bind, bind_disp;
 
