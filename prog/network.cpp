@@ -447,8 +447,8 @@ int main(int argc, char* argv[]){
             file_pe << net->get_stretching_energy()<<"\t"<<net->get_bending_energy()<<"\t"<<
                 myosins->get_potential_energy()<<"\t"<<crosslks->get_potential_energy()<<endl;
 
-            file_vm << time_str;
-            myosins->vm_write(file_vm);
+            //file_vm << time_str<<" = time";
+            myosins->vm_write(file_vm,t);
 
             file_a<<std::flush;
             file_l<<std::flush;

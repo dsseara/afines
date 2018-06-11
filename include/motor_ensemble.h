@@ -56,7 +56,7 @@ class motor_ensemble
 
         void motor_write(ostream& fout);
 
-        void vm_write(ostream& fout);
+        void vm_write(ostream& fout, double t);
 
         void print_ensemble_thermo();
 

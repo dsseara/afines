@@ -431,15 +431,15 @@ void motor::step_onehead(int hd)
 
         //calculate motor velocity
         if (vs != 0 && !(at_barbed_end[hd])){
-            double vm = vs;
+            double vm1 = vs;
             vm_store[hd] = 0;
             if (state[pr(hd)] != 0){
-                vm = my_velocity(vs,
+                vm1 = my_velocity(vs,
                         pow(-1, hd)*dot(force, actin_network->get_direction(f_index[hd], l_index[hd])),
                         stall_force);
-                vm_store[hd] = vm;
+                vm_store[hd] = vm1;
             }
-            this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm); // update relative position
+            this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm1); // update relative position
         }
         if (state[hd] == 1) this->update_position_attached(hd);  // update absolute position
 
@@ -604,13 +604,13 @@ string motor::write()
         +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1]);
 }
 
-string motor::writevm()
+string motor::writevm(double time_str)
 {
     string vm_out = "";
     for (int i = 0 ; i<=1 ; i++)
     {
         if(vm_store[i] != 0) 
-            vm_out = "\n" + std::to_string(vm_store[i]) + "\t" + std::to_string(dt) +
+            vm_out = "\n" + std::to_string(time_str) + std::to_string(vm_store[i]) + "\t" + std::to_string(dt) +
                 "\t" + std::to_string(force[0]) + "\t" + std::to_string(force[1]) + "\t" +
                 std::to_string(tension);
         else
