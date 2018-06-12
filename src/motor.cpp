@@ -88,6 +88,7 @@ motor::motor( array<double, 3> pos,
 
     bind_disp[0] = {0,0};
     bind_disp[1]=  {0,0};
+    vm_store = {0,0};
 
     at_barbed_end = {false, false};
 
@@ -610,7 +611,7 @@ string motor::writevm(double time_str)
     for (int i = 0 ; i<=1 ; i++)
     {
         if(vm_store[i] != 0) 
-            vm_out = "\n" + std::to_string(time_str) + std::to_string(vm_store[i]) + "\t" + std::to_string(dt) +
+            vm_out = "\n" + std::to_string(time_str) + "\t" + std::to_string(vm_store[i]) + "\t" + std::to_string(dt) +
                 "\t" + std::to_string(force[0]) + "\t" + std::to_string(force[1]) + "\t" +
                 std::to_string(tension);
         else
