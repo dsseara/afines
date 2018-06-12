@@ -19,6 +19,7 @@ Edited by Daniel Seara (Yale), 02/06/2018
 ### Compiling AFINES on Grace cluster at Yale ###
 * First ensure you have an account on Grace and have an SSH key loaded. Follow the instructions here if you have not done that yet, follow the instructions [here](https://research.computing.yale.edu/support/hpc/getting-started)
 
+
 * ssh into grace using your netid
     ```
         $ ssh NETID@grace.hpc.yale.edu
@@ -40,16 +41,19 @@ Edited by Daniel Seara (Yale), 02/06/2018
         $ git clone https://github.com/dsseara/afines.git
     ```
 
+
 * Change directories to the afines folder and make a new directory named `bin`
     ```
         $ cd afines
         $ mkdir bin
     ```
 
+
 * Edit makefile using your favorite command line based editor (vim, emacs, etc) to add the following to line 20 (or whatever line starts with `INC :=`)
     ```
         $ -I gpfs/apps/hpc/Libs/Boost/1.59.0/include
     ```
+
 
 * If you don't already have an executable, run the command (flags in `[...]` are optional):
     ```
@@ -83,6 +87,8 @@ Edited by Daniel Seara (Yale), 02/06/2018
 
 Create an output directory for your simulation. e.g. on Grace you could use:
 
+
+
     ```
         $ mkdir ~/project/YYMMDD/SIMNAME
     ```
@@ -90,14 +96,17 @@ Replacing `YYMMDD` with today's date, and `SIMNAME` is whatever you want to call
 
 There are two ways to run simulations, either directly from the command line, or by using a configuration file.
 
+
 ### Command line example ###
 
 For example, to run a 500 second of simulation of 10 rigid actin filaments, an active motor density of 0.5 and a crosslinker density of 0.05 you would enter the command:
+
 
     ```
         $ cd ~/afines/
         $ ./bin/afines --tf 500 --npolymer 10 --a_motor_density 0.5 --p_motor_density 0.05 --dir /project/fas/murrell/dss86/YYMMDD/SIMNAME
     ```
+
 
 *Note that you have to be in the `afines` folder for `./bin/afines` to work. If you are not in that folder, specify the full path to the `bin/afines` executable instead.*
 
@@ -188,7 +197,7 @@ each list of positions within the file. Thus the structure of actins.txt is:
 ```
 
 * data/pe.txt is the total potential energy of all particles at a given time step and has the format
-    * U(filament_stretch)  U(filament_bend) U(xlink_stretch) U(motor_stretch) where each U is total at that timestep
+    * U(filament_stretch)  U(filament_bend) U(motor_stretch) U(xlink_stretch) where each U is total at that timestep
     * time isn't delineated in these files; rather line 1 is t=t1, line 2, is t=t2, etc.
 
 * data/config_full.cfg is the full set of configuration options used for the simulation. Thus if a simulation did not
