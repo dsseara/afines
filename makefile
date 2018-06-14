@@ -17,7 +17,7 @@ CFLAGS_DEBUG := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -pg
 
 # BOOST_SUFFIX := -mt
 LIB := -L ${BOOST_ROOT} -lboost_unit_test_framework${BOOST_SUFFIX} -lboost_program_options${BOOST_SUFFIX} -lboost_filesystem${BOOST_SUFFIX} -lboost_system${BOOST_SUFFIX}
-INC := -I include  -I /usr/include/ -I /usr/local/include/ -I /opt/local/include/ -I gpfs/apps/hpc/Libs/Boost/1.59.0/include
+INC := -I include  -I /usr/include/ -I /usr/local/include/ -I /opt/local/include/
 
 #NOW := $(shell date +"%c" | tr ' :' '_')
 
