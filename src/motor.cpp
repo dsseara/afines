@@ -274,7 +274,10 @@ bool motor::attach(int hd)
             else if(allowed_bind(hd, it->second)){
 
                 intPoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint();
-                not_off_prob += metropolis_prob(hd, it->second, intPoint, kon);
+                double proposed_stretch  = dist_bc(BC, intPoint[0] - hx[pr(hd)], intPoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
+                double proposed_tension = mk*(proposed_stretch - mld);
+
+                not_off_prob += metropolis_prob(hd, it->second, intPoint, kon) * exp(proposed_tension*catch_length/temperature);
 
                 if (mf_rand < not_off_prob)
                 {
