@@ -605,5 +605,6 @@ string motor::write()
         +  "\t" + std::to_string(disp[0]) + "\t" + std::to_string(disp[1])
         +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1])
         +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1])
-        +  "\t" + std::to_string(bind_disp[0]) + "\t" + std::to_string(bind_disp[1]);
+        +  "\t" + std::to_string(pow(bind_disp[0][0] * bind_disp[0][0] + bind_disp[0][1]*bind_disp[0][1], 0.5))
+        +  "\t" + std::to_string(pow(bind_disp[1][0] * bind_disp[1][0] + bind_disp[1][1]*bind_disp[1][1], 0.5));
 }
