@@ -89,6 +89,11 @@ motor::motor( array<double, 3> pos,
     bind_disp[0] = {0,0};
     bind_disp[1]=  {0,0};
 
+    dr_attach = {-1, -1};
+    dr_detach = {-1, -1};
+    prob_attach = {-1, -1};
+    prob_detach = {-1, -1};
+
     at_barbed_end = {false, false};
 
     if (state[0] == 1){
@@ -255,7 +260,7 @@ bool motor::allowed_bind(int hd, array<int, 2> fl_idx){
 //check for attachment of unbound heads given head index (0 for head 1, and 1 for head 2)
 bool motor::attach(int hd)
 {
-    double attach_prob = 0;
+    double not_off_prob = 0;
     double mf_rand = rng(0,1.0);
     array<double, 2> intPoint;
     double proposed_stretch = 0;
@@ -269,6 +274,13 @@ bool motor::attach(int hd)
         for (set<pair<double, array<int, 2>>>::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
         {
             if (it->first > max_bind_dist) //since it's sorted, all the others will be farther than max_bind_dist too
+                not_off_prob = 0;
+
+                prob_attach[hd] = not_off_prob;
+                prob_detach[hd] = -1;
+                dr_attach[hd] = it->first;
+                dr_detach[hd] = -1;
+
                 break;
 
            // head can't bind to the same filament link the other head is bound to
@@ -276,12 +288,18 @@ bool motor::attach(int hd)
             else if(allowed_bind(hd, it->second)){
 
                 intPoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint();
-                proposed_stretch  = dist_bc(BC, intPoint[0] - hx[pr(hd)], intPoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
-                proposed_tension = mk*(proposed_stretch - mld);
+                proposed_stretch  = dist_bc(BC, intPoint[0] - hx[pr(hd)], intPoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx());
+                proposed_tension = mk * (proposed_stretch - mld);
 
-                attach_prob += metropolis_prob(hd, it->second, intPoint, kon) * exp(proposed_tension*catch_length/temperature);
+                not_off_prob += metropolis_prob(hd, it->second, intPoint, kon) * exp(proposed_tension*catch_length/temperature);
+                prob_attach[hd] = not_off_prob;
 
-                if (mf_rand < attach_prob)
+                prob_attach[hd] = not_off_prob;
+                prob_detach[hd] = -1;
+                dr_attach[hd] = proposed_stretch;
+                dr_detach[hd] = -1;
+
+                if (mf_rand < not_off_prob)
                 {
                     //update state
                     state[hd] = 1;
@@ -303,6 +321,7 @@ bool motor::attach(int hd)
 
                     //(even if its at the barbed end upon binding, could have negative velocity, so always set this to false, until it steps)
                     at_barbed_end[hd] = false;
+
 
                     return true;
                 }
@@ -428,6 +447,11 @@ void motor::step_onehead(int hd)
 
     if (tension > fracture_force)
         off_prob = 1.0;
+
+    prob_attach[hd] = -1;
+    prob_detach[hd] = detach_proff;
+    dr_attach[hd] = -1;
+    dr_detach[hd] = pow(pow(hpos_new[0], 2) + pow(hpos_new[1], 2), 0.5) - pow(pow(hx[hd], 2) + pow(hy[hd][1], 2), 0.5);
 
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
@@ -605,6 +629,8 @@ string motor::write()
         +  "\t" + std::to_string(disp[0]) + "\t" + std::to_string(disp[1])
         +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1])
         +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1])
-        +  "\t" + std::to_string(pow(bind_disp[0][0] * bind_disp[0][0] + bind_disp[0][1]*bind_disp[0][1], 0.5))
-        +  "\t" + std::to_string(pow(bind_disp[1][0] * bind_disp[1][0] + bind_disp[1][1]*bind_disp[1][1], 0.5));
+        +  "\t" + std::to_string(prob_attach[0]) + "\t" + std::to_string(dr_attach[0])
+        +  "\t" + std::to_string(prob_detach[0]) + "\t" + std::to_string(dr_detach[0])
+        +  "\t" + std::to_string(prob_attach[1]) + "\t" + std::to_string(dr_attach[1])
+        +  "\t" + std::to_string(prob_detach[1]) + "\t" + std::to_string(dr_detach[1]);
 }
