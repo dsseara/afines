@@ -185,6 +185,11 @@ motor::motor( array<double, 4> pos,
     bind_disp[0] = {0,0};
     bind_disp[1] = {0,0};
 
+    dr_attach = {-1, -1};
+    dr_detach = {-1, -1};
+    prob_attach = {-1, -1};
+    prob_detach = {-1, -1};
+
     at_barbed_end = {false, false};
 
 
@@ -273,7 +278,8 @@ bool motor::attach(int hd)
 
         for (set<pair<double, array<int, 2>>>::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
         {
-            if (it->first > max_bind_dist) //since it's sorted, all the others will be farther than max_bind_dist too
+            if (it->first > max_bind_dist)
+            { //since it's sorted, all the others will be farther than max_bind_dist too
                 not_off_prob = 0;
 
                 prob_attach[hd] = not_off_prob;
@@ -282,6 +288,7 @@ bool motor::attach(int hd)
                 dr_detach[hd] = -1;
 
                 break;
+            }
 
            // head can't bind to the same filament link the other head is bound to
            // else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
@@ -449,9 +456,9 @@ void motor::step_onehead(int hd)
         off_prob = 1.0;
 
     prob_attach[hd] = -1;
-    prob_detach[hd] = detach_proff;
+    prob_detach[hd] = off_prob;
     dr_attach[hd] = -1;
-    dr_detach[hd] = pow(pow(hpos_new[0], 2) + pow(hpos_new[1], 2), 0.5) - pow(pow(hx[hd], 2) + pow(hy[hd][1], 2), 0.5);
+    dr_detach[hd] = pow(pow(hpos_new[0], 2) + pow(hpos_new[1], 2), 0.5) - pow(pow(hx[hd], 2) + pow(hy[hd], 2), 0.5);
 
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
