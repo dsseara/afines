@@ -255,9 +255,11 @@ bool motor::allowed_bind(int hd, array<int, 2> fl_idx){
 //check for attachment of unbound heads given head index (0 for head 1, and 1 for head 2)
 bool motor::attach(int hd)
 {
-    double not_off_prob = 0;
+    double attach_prob = 0;
     double mf_rand = rng(0,1.0);
     array<double, 2> intPoint;
+    double proposed_stretch = 0;
+    double proposed_tension = 0;
 
 //    set<pair<double, array<int, 2> > > dist_sorted = actin_network->get_dist_all(hx[hd], hy[hd]);//if not using neighbor lists
     set<pair<double, array<int, 2> > > dist_sorted = actin_network->get_dist(hx[hd], hy[hd]);
@@ -274,12 +276,12 @@ bool motor::attach(int hd)
             else if(allowed_bind(hd, it->second)){
 
                 intPoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint();
-                double proposed_stretch  = dist_bc(BC, intPoint[0] - hx[pr(hd)], intPoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
-                double proposed_tension = mk*(proposed_stretch - mld);
+                proposed_stretch  = dist_bc(BC, intPoint[0] - hx[pr(hd)], intPoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
+                proposed_tension = mk*(proposed_stretch - mld);
 
-                not_off_prob += metropolis_prob(hd, it->second, intPoint, kon) * exp(proposed_tension*catch_length/temperature);
+                attach_prob += metropolis_prob(hd, it->second, intPoint, kon) * exp(proposed_tension*catch_length/temperature);
 
-                if (mf_rand < not_off_prob)
+                if (mf_rand < attach_prob)
                 {
                     //update state
                     state[hd] = 1;
@@ -602,5 +604,6 @@ string motor::write()
     return "\n" + std::to_string(hx[0]) + "\t" + std::to_string(hy[0])
         +  "\t" + std::to_string(disp[0]) + "\t" + std::to_string(disp[1])
         +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1])
-        +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1]);
+        +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1])
+        +  "\t" + std::to_string(bind_disp[0]) + "\t" + std::to_string(bind_disp[1]);
 }
