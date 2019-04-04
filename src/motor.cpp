@@ -295,15 +295,15 @@ bool motor::attach(int hd)
             else if(allowed_bind(hd, it->second)){
 
                 intPoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint();
-                proposed_stretch  = dist_bc(BC, intPoint[0] - hx[pr(hd)], intPoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx());
-                proposed_tension = mk * (proposed_stretch - mld);
+                proposed_stretch  = dist_bc(BC, intPoint[0] - hx[pr(hd)], intPoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
+                proposed_tension = mk * proposed_stretch;
 
                 not_off_prob += metropolis_prob(hd, it->second, intPoint, kon) * exp(proposed_tension*catch_length/temperature);
                 prob_attach[hd] = not_off_prob;
 
                 prob_attach[hd] = not_off_prob;
                 prob_detach[hd] = -1;
-                dr_attach[hd] = proposed_stretch;
+                dr_attach[hd] = proposed_stretch - tension / mk;
                 dr_detach[hd] = -1;
 
                 if (mf_rand < not_off_prob)
@@ -458,7 +458,8 @@ void motor::step_onehead(int hd)
     prob_attach[hd] = -1;
     prob_detach[hd] = off_prob;
     dr_attach[hd] = -1;
-    dr_detach[hd] = pow(pow(hpos_new[0], 2) + pow(hpos_new[1], 2), 0.5) - pow(pow(hx[hd], 2) + pow(hy[hd], 2), 0.5);
+    dr_detach[hd] = pow(pow(hpos_new[0] - hx[pr(hd)], 2) + pow(hpos_new[1] - hy[pr(hd)], 2) , 0.5) - tension / mk
+    // pow(pow(hpos_new[0], 2) + pow(hpos_new[1], 2), 0.5) - pow(pow(hx[hd], 2) + pow(hy[hd], 2), 0.5);
 
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
