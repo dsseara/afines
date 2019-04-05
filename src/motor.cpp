@@ -458,7 +458,7 @@ void motor::step_onehead(int hd)
     prob_attach[hd] = -1;
     prob_detach[hd] = off_prob;
     dr_attach[hd] = -1;
-    dr_detach[hd] = dist_bc(BC, hpos_new[0] - hx[pr(hd)], hpos_new[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
+    dr_detach[hd] = dist_bc(BC, hpos_new[0] - hx[pr(hd)], hpos_new[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld - tension / mk;
     // pow(pow(hpos_new[0] - hx[pr(hd)], 2) + pow(hpos_new[1] - hy[pr(hd)], 2) , 0.5) - tension / mk;
     // pow(pow(hpos_new[0], 2) + pow(hpos_new[1], 2), 0.5) - pow(pow(hx[hd], 2) + pow(hy[hd], 2), 0.5);
 
