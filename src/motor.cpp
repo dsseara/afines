@@ -89,8 +89,8 @@ motor::motor( array<double, 3> pos,
     bind_disp[0] = {0,0};
     bind_disp[1]=  {0,0};
 
-    dr_attach = {-1, -1};
-    dr_detach = {-1, -1};
+    dU_attach = {-1, -1};
+    dU_detach = {-1, -1};
     prob_attach = {-1, -1};
     prob_detach = {-1, -1};
 
@@ -185,8 +185,8 @@ motor::motor( array<double, 4> pos,
     bind_disp[0] = {0,0};
     bind_disp[1] = {0,0};
 
-    dr_attach = {-1, -1};
-    dr_detach = {-1, -1};
+    dU_attach = {-1, -1};
+    dU_detach = {-1, -1};
     prob_attach = {-1, -1};
     prob_detach = {-1, -1};
 
@@ -284,8 +284,8 @@ bool motor::attach(int hd)
 
                 prob_attach[hd] = not_off_prob;
                 prob_detach[hd] = -1;
-                dr_attach[hd] = it->first;
-                dr_detach[hd] = -1;
+                dU_attach[hd] = 0.5 * mk * pow(it->first, 2) - tension * tension / (2 * mk);
+                dU_detach[hd] = -1;
 
                 break;
             }
@@ -303,8 +303,8 @@ bool motor::attach(int hd)
 
                 prob_attach[hd] = not_off_prob;
                 prob_detach[hd] = -1;
-                dr_attach[hd] = proposed_stretch - tension / mk;
-                dr_detach[hd] = -1;
+                dU_attach[hd] = proposed_tension * proposed_tension / (2 * mk) - tension * tension / (2 * mk);
+                dU_detach[hd] = -1;
 
                 if (mf_rand < not_off_prob)
                 {
@@ -455,10 +455,12 @@ void motor::step_onehead(int hd)
     if (tension > fracture_force)
         off_prob = 1.0;
 
+    double new_dist = dist_bc(BC, hpos_new[0] - hx[pr(hd)], hpos_new[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
+
     prob_attach[hd] = -1;
     prob_detach[hd] = off_prob;
-    dr_attach[hd] = -1;
-    dr_detach[hd] = dist_bc(BC, hpos_new[0] - hx[pr(hd)], hpos_new[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld - tension / mk;
+    dU_attach[hd] = -1;
+    dU_detach[hd] = 0.5 * mk * new_dist * new_dist - tension * tension / (2 * mk);
     // pow(pow(hpos_new[0] - hx[pr(hd)], 2) + pow(hpos_new[1] - hy[pr(hd)], 2) , 0.5) - tension / mk;
     // pow(pow(hpos_new[0], 2) + pow(hpos_new[1], 2), 0.5) - pow(pow(hx[hd], 2) + pow(hy[hd], 2), 0.5);
 
@@ -638,8 +640,8 @@ string motor::write()
         +  "\t" + std::to_string(disp[0]) + "\t" + std::to_string(disp[1])
         +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1])
         +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1])
-        +  "\t" + std::to_string(prob_attach[0]) + "\t" + std::to_string(dr_attach[0])
-        +  "\t" + std::to_string(prob_detach[0]) + "\t" + std::to_string(dr_detach[0])
-        +  "\t" + std::to_string(prob_attach[1]) + "\t" + std::to_string(dr_attach[1])
-        +  "\t" + std::to_string(prob_detach[1]) + "\t" + std::to_string(dr_detach[1]);
+        +  "\t" + std::to_string(prob_attach[0]) + "\t" + std::to_string(dU_attach[0])
+        +  "\t" + std::to_string(prob_detach[0]) + "\t" + std::to_string(dU_detach[0])
+        +  "\t" + std::to_string(prob_attach[1]) + "\t" + std::to_string(dU_attach[1])
+        +  "\t" + std::to_string(prob_detach[1]) + "\t" + std::to_string(dU_detach[1]);
 }
