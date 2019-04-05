@@ -298,8 +298,8 @@ bool motor::attach(int hd)
                 proposed_stretch  = dist_bc(BC, intPoint[0] - hx[pr(hd)], intPoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
                 proposed_tension = mk * proposed_stretch;
 
-                not_off_prob += metropolis_prob(hd, it->second, intPoint, kon) * exp(proposed_tension*catch_length/temperature);
-                prob_attach[hd] = not_off_prob;
+                // not_off_prob += metropolis_prob(hd, it->second, intPoint, kon) * exp(proposed_tension*catch_length/temperature);
+                not_off_prob += metropolis_prob(hd, it->second, intPoint, kon);
 
                 prob_attach[hd] = not_off_prob;
                 prob_detach[hd] = -1;
