@@ -434,13 +434,6 @@ void motor::step_onehead(int hd)
 
     double new_dist = dist_bc(BC, hpos_new[0] - hx[pr(hd)], hpos_new[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
 
-    prob_attach[hd] = -1;
-    prob_detach[hd] = off_prob;
-    dU_attach[hd] = -1;
-    dU_detach[hd] = 0.5 * mk * new_dist * new_dist - tension * tension / (2 * mk);
-    // pow(pow(hpos_new[0] - hx[pr(hd)], 2) + pow(hpos_new[1] - hy[pr(hd)], 2) , 0.5) - tension / mk;
-    // pow(pow(hpos_new[0], 2) + pow(hpos_new[1], 2), 0.5) - pow(pow(hx[hd], 2) + pow(hy[hd], 2), 0.5);
-
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
     if ( event(off_prob) ) this->detach_head(hd, hpos_new);
