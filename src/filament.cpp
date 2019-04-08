@@ -215,8 +215,8 @@ void filament::update_positions()
         if (fabs(actins[i]->get_ycm()) > top_y) continue;
 
         new_rnds = {rng_n(), rng_n()};
-        vx  = 0; //(actins[i]->get_force()[0])/damp  + bd_prefactor*(new_rnds[0] + prv_rnds[i][0]);
-        vy  = 0; //(actins[i]->get_force()[1])/damp  + bd_prefactor*(new_rnds[1] + prv_rnds[i][1]);
+        vx  = (actins[i]->get_force()[0])/damp  + bd_prefactor*(new_rnds[0] + prv_rnds[i][0]);
+        vy  = (actins[i]->get_force()[1])/damp  + bd_prefactor*(new_rnds[1] + prv_rnds[i][1]);
 //        cout<<"\nDEBUG: Fx("<<i<<") = "<<actins[i]->get_force()[0]<<"; v = ("<<vx<<" , "<<vy<<")";
 
         prv_rnds[i] = new_rnds;
