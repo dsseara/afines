@@ -188,7 +188,7 @@ each list of positions within the file. Thus the structure of actins.txt is:
 ```
 
 * data/pe.txt is the total potential energy of all particles at a given time step and has the format
-    * U(filament_stretch)  U(filament_bend) U(xlink_stretch) U(motor_stretch) where each U is total at that timestep
+    * U(filament_stretch)  U(filament_bend) U(motor_stretch) U(xlink_stretch) where each U is total at that timestep
     * time isn't delineated in these files; rather line 1 is t=t1, line 2, is t=t2, etc.
 
 * data/config_full.cfg is the full set of configuration options used for the simulation. Thus if a simulation did not
