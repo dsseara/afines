@@ -281,6 +281,10 @@ bool motor::attach(int hd)
                 proposed_stretch  = dist_bc(BC, intPoint[0] - hx[pr(hd)], intPoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
                 proposed_tension = mk * proposed_stretch;
 
+                // make sure catch bond does not amplify attachment for proposed motor compression
+                if (proposed_tension < 0)
+                    proposed_tension = 0;
+
                 not_off_prob += metropolis_prob(hd, it->second, intPoint, kon) * exp(proposed_tension*catch_length/temperature);
 
                 if (mf_rand < not_off_prob)
