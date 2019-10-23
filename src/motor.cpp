@@ -89,6 +89,11 @@ motor::motor( array<double, 3> pos,
     bind_disp[0] = {0,0};
     bind_disp[1]=  {0,0};
 
+    dU_attach = {-1, -1};
+    dU_detach = {-1, -1};
+    prob_attach = {-1, -1};
+    prob_detach = {-1, -1};
+
     at_barbed_end = {false, false};
 
     if (state[0] == 1){
@@ -180,6 +185,11 @@ motor::motor( array<double, 4> pos,
     bind_disp[0] = {0,0};
     bind_disp[1] = {0,0};
 
+    dU_attach = {-1, -1};
+    dU_detach = {-1, -1};
+    prob_attach = {-1, -1};
+    prob_detach = {-1, -1};
+
     at_barbed_end = {false, false};
 
 
@@ -270,6 +280,13 @@ bool motor::attach(int hd)
         {
             if (it->first > max_bind_dist)
             { //since it's sorted, all the others will be farther than max_bind_dist too
+                not_off_prob = 0;
+
+                prob_attach[hd] = not_off_prob;
+                prob_detach[hd] = -1;
+                dU_attach[hd] = 0.5 * mk * pow(it->first, 2) - tension * tension / (2 * mk);
+                dU_detach[hd] = -1;
+
                 break;
             }
 
@@ -286,6 +303,11 @@ bool motor::attach(int hd)
                     proposed_tension = 0;
 
                 not_off_prob += metropolis_prob(hd, it->second, intPoint, kon) * exp(proposed_tension*catch_length/temperature);
+
+                prob_attach[hd] = not_off_prob;
+                prob_detach[hd] = -1;
+                dU_attach[hd] = proposed_tension * proposed_tension / (2 * mk) - tension * tension / (2 * mk);
+                dU_detach[hd] = -1;
 
                 if (mf_rand < not_off_prob)
                 {
@@ -437,6 +459,11 @@ void motor::step_onehead(int hd)
         off_prob = 1.0;
 
     double new_dist = dist_bc(BC, hpos_new[0] - hx[pr(hd)], hpos_new[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
+
+    prob_attach[hd] = -1;
+    prob_detach[hd] = off_prob;
+    dU_attach[hd] = -1;
+    dU_detach[hd] = 0.5 * mk * new_dist * new_dist - tension * tension / (2 * mk);
 
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
@@ -613,5 +640,9 @@ string motor::write()
     return "\n" + std::to_string(hx[0]) + "\t" + std::to_string(hy[0])
         +  "\t" + std::to_string(disp[0]) + "\t" + std::to_string(disp[1])
         +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1])
-        +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1]);
+        +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1])
+        +  "\t" + std::to_string(prob_attach[0]) + "\t" + std::to_string(dU_attach[0])
+        +  "\t" + std::to_string(prob_detach[0]) + "\t" + std::to_string(dU_detach[0])
+        +  "\t" + std::to_string(prob_attach[1]) + "\t" + std::to_string(dU_attach[1])
+        +  "\t" + std::to_string(prob_detach[1]) + "\t" + std::to_string(dU_detach[1]);
 }
