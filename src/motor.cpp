@@ -487,9 +487,10 @@ void motor::step_onehead(int hd)
 
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
-    if ( event(off_prob) )
+    if ( event(off_prob) ){
         this->detach_head(hd, hpos_new);
         entropy += log((1 - prob_detach_prior[hd]) / prob_detach[hd]);  // didn't detach before, detach now
+    }
     else{
         entropy += log((1 - prob_detach_prior[hd]) / (1 - prob_detach[hd])); // didn't detach before, didn't detach now
         //calculate motor velocity
