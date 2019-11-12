@@ -299,7 +299,7 @@ bool motor::attach(int hd)
                 dU_attach[hd] = 0.5 * mk * pow(it->first, 2) - tension * tension / (2 * mk);
                 dU_detach[hd] = -1;
 
-                entropy += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]))
+                entropy += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]));
                 break;
             }
 
@@ -345,12 +345,12 @@ bool motor::attach(int hd)
                     //(even if its at the barbed end upon binding, could have negative velocity, so always set this to false, until it steps)
                     at_barbed_end[hd] = false;
 
-                    entropy += log((1 - prob_attach_prior[hd]) / prob_attach[hd])  // didn't attach before, attached now
+                    entropy += log((1 - prob_attach_prior[hd]) / prob_attach[hd]);  // didn't attach before, attached now
                     return true;
                 }
                 else
                 {
-                    entropy += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]))  // didn't attach before, didn't attach now
+                    entropy += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]));  // didn't attach before, didn't attach now
                 }
             }
         }
@@ -489,9 +489,9 @@ void motor::step_onehead(int hd)
     // attempt detachment
     if ( event(off_prob) )
         this->detach_head(hd, hpos_new);
-        entropy += log((1 - prob_detach_prior[hd]) / prob_detach[hd])  // didn't detach before, detach now
+        entropy += log((1 - prob_detach_prior[hd]) / prob_detach[hd]);  // didn't detach before, detach now
     else{
-        entropy += log((1 - prob_detach_prior[hd]) / (1 - prob_detach[hd])) // didn't detach before, didn't detach now
+        entropy += log((1 - prob_detach_prior[hd]) / (1 - prob_detach[hd])); // didn't detach before, didn't detach now
         //calculate motor velocity
         if (vs != 0 && !(at_barbed_end[hd])){
             double vm = vs;
