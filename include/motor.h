@@ -121,7 +121,8 @@ class motor
                damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension, catch_length,
                fracture_force, entropy;
 
-        array<double, 2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp, dU_attach, dU_detach, prob_attach, prob_detach;
+        array<double, 2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp,
+                         dU_attach, dU_detach, prob_attach, prob_detach, prob_attach_prior, prob_detach_prior;
 
         array<array<double, 2>, 2> ldir_bind, bind_disp;
 
