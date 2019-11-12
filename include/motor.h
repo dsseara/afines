@@ -119,7 +119,7 @@ class motor
 
         double mphi,mld, vs, stall_force, max_bind_dist, mk, kon, koff, kend, dt, temperature,
                damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension, catch_length,
-               fracture_force;
+               fracture_force, entropy;
 
         array<double, 2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp, dU_attach, dU_detach, prob_attach, prob_detach;
 

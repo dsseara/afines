@@ -93,6 +93,10 @@ motor::motor( array<double, 3> pos,
     dU_detach = {-1, -1};
     prob_attach = {-1, -1};
     prob_detach = {-1, -1};
+    prob_attach_prior = {-1, -1};
+    prob_detach_prior = {-1, -1};
+
+    entropy = 0;
 
     at_barbed_end = {false, false};
 
@@ -189,6 +193,10 @@ motor::motor( array<double, 4> pos,
     dU_detach = {-1, -1};
     prob_attach = {-1, -1};
     prob_detach = {-1, -1};
+    prob_attach_prior = {-1, -1};
+    prob_detach_prior = {-1, -1};
+
+    entropy = 0;
 
     at_barbed_end = {false, false};
 
@@ -274,6 +282,10 @@ bool motor::attach(int hd)
 //    set<pair<double, array<int, 2> > > dist_sorted = actin_network->get_dist_all(hx[hd], hy[hd]);//if not using neighbor lists
     set<pair<double, array<int, 2> > > dist_sorted = actin_network->get_dist(hx[hd], hy[hd]);
 
+    // Store previous attachement/detachment probabilities
+    prob_detach_prior[hd] = prob_detach[hd];
+    prob_attach_prior[hd] = prob_attach[hd];
+
     if(!dist_sorted.empty()){
 
         for (set<pair<double, array<int, 2>>>::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
@@ -287,6 +299,7 @@ bool motor::attach(int hd)
                 dU_attach[hd] = 0.5 * mk * pow(it->first, 2) - tension * tension / (2 * mk);
                 dU_detach[hd] = -1;
 
+                entropy += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]))
                 break;
             }
 
@@ -332,8 +345,12 @@ bool motor::attach(int hd)
                     //(even if its at the barbed end upon binding, could have negative velocity, so always set this to false, until it steps)
                     at_barbed_end[hd] = false;
 
-
+                    entropy += log((1 - prob_attach_prior[hd]) / prob_attach[hd])  // didn't attach before, attached now
                     return true;
+                }
+                else
+                {
+                    entropy += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]))  // didn't attach before, didn't attach now
                 }
             }
         }
@@ -460,6 +477,9 @@ void motor::step_onehead(int hd)
 
     double new_dist = dist_bc(BC, hpos_new[0] - hx[pr(hd)], hpos_new[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
 
+    prob_attach_prior[hd] = prob_attach[hd];
+    prob_detach_prior[hd] = prob_detach[hd];
+
     prob_attach[hd] = -1;
     prob_detach[hd] = off_prob;
     dU_attach[hd] = -1;
@@ -467,9 +487,11 @@ void motor::step_onehead(int hd)
 
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
-    if ( event(off_prob) ) this->detach_head(hd, hpos_new);
+    if ( event(off_prob) )
+        this->detach_head(hd, hpos_new);
+        entropy += log((1 - prob_detach_prior[hd]) / prob_detach[hd])  // didn't detach before, detach now
     else{
-
+        entropy += log((1 - prob_detach_prior[hd]) / (1 - prob_detach[hd])) // didn't detach before, didn't detach now
         //calculate motor velocity
         if (vs != 0 && !(at_barbed_end[hd])){
             double vm = vs;
@@ -481,7 +503,6 @@ void motor::step_onehead(int hd)
             this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm); // update relative position
         }
         if (state[hd] == 1) this->update_position_attached(hd);  // update absolute position
-
     }
 }
 
@@ -644,5 +665,6 @@ string motor::write()
         +  "\t" + std::to_string(prob_attach[0]) + "\t" + std::to_string(dU_attach[0])
         +  "\t" + std::to_string(prob_detach[0]) + "\t" + std::to_string(dU_detach[0])
         +  "\t" + std::to_string(prob_attach[1]) + "\t" + std::to_string(dU_attach[1])
-        +  "\t" + std::to_string(prob_detach[1]) + "\t" + std::to_string(dU_detach[1]);
+        +  "\t" + std::to_string(prob_detach[1]) + "\t" + std::to_string(dU_detach[1])
+        +  "\t" + std::to_string(entropy);
 }
