@@ -332,11 +332,11 @@ bool motor::attach(int hd)
 
                 if (prob_attach_prior[hd] > -1){
                     entropy_stayUnbound += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]));
-                    entropy += entropy_stayUnbound;
+                    entropy += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]));
                 }
                 else if (prob_detach_prior[hd] > -1){
                     entropy_unbind += log((prob_detach_prior[hd]) / prob_attach[hd]);
-                    entropy += entropy_unbind;
+                    entropy += log((prob_detach_prior[hd]) / prob_attach[hd]);
                 }
 
                 if (mf_rand < not_off_prob)
@@ -504,11 +504,11 @@ void motor::step_onehead(int hd)
 
     if (prob_attach_prior[hd] > -1){
         entropy_bind += log(prob_attach_prior[hd] / prob_detach[hd]);
-        entropy += entropy_bind;
+        entropy += log(prob_attach_prior[hd] / prob_detach[hd]);
     }
     else if (prob_detach_prior[hd] > -1){
         entropy_stayBound += log((1 - prob_detach_prior[hd]) / (1 - prob_detach[hd]));
-        entropy += entropy_stayBound;
+        entropy += log((1 - prob_detach_prior[hd]) / (1 - prob_detach[hd]));
     }
 
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
