@@ -97,6 +97,10 @@ motor::motor( array<double, 3> pos,
     prob_detach_prior = {-1, -1};
 
     entropy = 0;
+    entropy_stayBound = 0;
+    entropy_unbind = 0;
+    entropy_bind = 0;
+    entropy_stayUnbound = 0;
 
     at_barbed_end = {false, false};
 
@@ -197,6 +201,10 @@ motor::motor( array<double, 4> pos,
     prob_detach_prior = {-1, -1};
 
     entropy = 0;
+    entropy_stayBound = 0;
+    entropy_unbind = 0;
+    entropy_bind = 0;
+    entropy_stayUnbound = 0;
 
     at_barbed_end = {false, false};
 
@@ -299,7 +307,7 @@ bool motor::attach(int hd)
                 dU_attach[hd] = 0.5 * mk * pow(it->first, 2) - tension * tension / (2 * mk);
                 dU_detach[hd] = -1;
 
-                entropy += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]));
+                // entropy += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]));
                 break;
             }
 
@@ -321,6 +329,15 @@ bool motor::attach(int hd)
                 prob_detach[hd] = -1;
                 dU_attach[hd] = proposed_tension * proposed_tension / (2 * mk) - tension * tension / (2 * mk);
                 dU_detach[hd] = -1;
+
+                if (prob_attach_prior[hd] > -1){
+                    entropy_stayUnbound += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]));
+                    entropy += entropy_stayUnbound;
+                }
+                else if (prob_detach_prior[hd] > -1){
+                    entropy_unbind += log((prob_detach_prior[hd]) / prob_attach[hd]);
+                    entropy += entropy_unbind;
+                }
 
                 if (mf_rand < not_off_prob)
                 {
@@ -345,12 +362,12 @@ bool motor::attach(int hd)
                     //(even if its at the barbed end upon binding, could have negative velocity, so always set this to false, until it steps)
                     at_barbed_end[hd] = false;
 
-                    entropy += log((1 - prob_attach_prior[hd]) / prob_attach[hd]);  // didn't attach before, attached now
+                    // entropy += log((1 - prob_attach_prior[hd]) / prob_attach[hd]);  // didn't attach before, attached now
                     return true;
                 }
                 else
                 {
-                    entropy += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]));  // didn't attach before, didn't attach now
+                    // entropy += log((1 - prob_attach_prior[hd]) / (1 - prob_attach[hd]));  // didn't attach before, didn't attach now
                 }
             }
         }
@@ -485,14 +502,23 @@ void motor::step_onehead(int hd)
     dU_attach[hd] = -1;
     dU_detach[hd] = 0.5 * mk * new_dist * new_dist - tension * tension / (2 * mk);
 
+    if (prob_attach_prior[hd] > -1){
+        entropy_bind += log(prob_attach_prior[hd] / prob_detach[hd]);
+        entropy += entropy_bind;
+    }
+    else if (prob_detach_prior[hd] > -1){
+        entropy_stayBound += log((1 - prob_detach_prior[hd]) / (1 - prob_detach[hd]));
+        entropy += entropy_stayBound;
+    }
+
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
     if ( event(off_prob) ){
         this->detach_head(hd, hpos_new);
-        entropy += log((1 - prob_detach_prior[hd]) / prob_detach[hd]);  // didn't detach before, detach now
+        // entropy += log((1 - prob_detach_prior[hd]) / prob_detach[hd]);  // didn't detach before, detach now
     }
     else{
-        entropy += log((1 - prob_detach_prior[hd]) / (1 - prob_detach[hd])); // didn't detach before, didn't detach now
+        // entropy += log((1 - prob_detach_prior[hd]) / (1 - prob_detach[hd])); // didn't detach before, didn't detach now
         //calculate motor velocity
         if (vs != 0 && !(at_barbed_end[hd])){
             double vm = vs;
@@ -663,9 +689,7 @@ string motor::write()
         +  "\t" + std::to_string(disp[0]) + "\t" + std::to_string(disp[1])
         +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1])
         +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1])
-        +  "\t" + std::to_string(prob_attach[0]) + "\t" + std::to_string(dU_attach[0])
-        +  "\t" + std::to_string(prob_detach[0]) + "\t" + std::to_string(dU_detach[0])
-        +  "\t" + std::to_string(prob_attach[1]) + "\t" + std::to_string(dU_attach[1])
-        +  "\t" + std::to_string(prob_detach[1]) + "\t" + std::to_string(dU_detach[1])
+        +  "\t" + std::to_string(entropy_stayUnbound) + "\t" + std::to_string(entropy_bind)
+        +  "\t" + std::to_string(entropy_unbind) + "\t" + std::to_string(entropy_stayBound)
         +  "\t" + std::to_string(entropy);
 }
