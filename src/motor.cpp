@@ -323,7 +323,7 @@ bool motor::attach(int hd)
                 if (proposed_tension < 0)
                     proposed_tension = 0;
 
-                not_off_prob += metropolis_prob(hd, it->second, intPoint, kon) * exp(proposed_tension*catch_length/temperature);
+                not_off_prob += metropolis_prob(hd, it->second, intPoint, kon); // * exp(proposed_tension*catch_length/temperature);
 
                 prob_attach[hd] = not_off_prob;
                 prob_detach[hd] = -1;
