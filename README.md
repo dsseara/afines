@@ -38,6 +38,10 @@ Edited by Daniel Seara (Yale), 09/03/2019
     ```
         $ git clone https://github.com/dsseara/afines.git
     ```
+    If you would like to download a specific branch of this repository (a *branch* is just a specific version of the code. [See here to learn about branches](https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell)), use:
+    ```
+        $ git clone --branch <branchname> https://github.com/dsseara/afines.git
+    ```
 
 * Change directories to the afines folder and make a new directory named `bin`
     ```
