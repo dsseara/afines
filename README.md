@@ -148,13 +148,18 @@ All files are tab delimited
          * idx = index of filament the link is on
 
 * txt_stack/amotors.txt and txt_stack/pmotors.txt have the format
-    * x y dx dy fidx0 fidx1 lidx0 lidx1
+    * x, y, dx, dy, fidx0, fidx1, lidx0, lidx1, s_stayUnbound, s_bind, s_unbind, s_stayBound, s_total
         * (x, y) = position of head 0 of motor
         * (x + dx, y + dy) = position of head 1 of motor
         * fidx0 = index of filament that head 0 is attached to (-1 if not attached)
         * fidx1 = index of filament that head 1 is attached to (-1 if not attached)
         * lidx0 = index of link that head 0 is attached to (-1 if fidx0 = -1)
         * lidx1 = index of link that head 1 is attached to (-1 if fidx1 = -1)
+        * s_stayUnbound = irreversibility for motors that stay unbound
+        * s_bind = irreversibility for steps that bind
+        * s_unbind = irreversibility for steps that unbind
+        * s_stayBound = irreversibility for steps that stay bound
+        * s_total = total irreversibility for motor
 
 * data/filament_e.txt is the energetics of each filament, and has the format
     * KE PE TE idx
