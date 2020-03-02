@@ -24,15 +24,15 @@ Edited by Daniel Seara (Yale), 02/06/2018
         $ ssh NETID@grace.hpc.yale.edu
     ```
 
+
 * This system requires gcc+11 and Boost which you can load on Grace via the commands
     ```
-        $ module load Langs/GCC/5.2.0
-        $ module load Libs/Boost/1.59.0
+        $ module load Boost/1.61.0-foss-2016b
     ```
 
 * In order to point the compiler to the Boost library, set the following variable
     ```
-        $ export BOOST_ROOT=/gpfs/apps/hpc/Libs/Boost/1.59.0/lib
+        $ export BOOST_ROOT=/gpfs/loomis/apps/avx/software/Boost/1.61.0-foss-2016b/lib
     ```
 
 * Download the simulation from github
@@ -48,7 +48,7 @@ Edited by Daniel Seara (Yale), 02/06/2018
 
 * Edit makefile using your favorite command line based editor (vim, emacs, etc) to add the following to line 20 (or whatever line starts with `INC`)
     ```
-        $ -I gpfs/apps/hpc/Libs/Boost/1.59.0/include
+        $ -I /gpfs/loomis/apps/avx/software/Boost/1.61.0-foss-2016b/include
     ```
 
 * If you don't already have an executable, run the command (flags in `[...]` are optional):
