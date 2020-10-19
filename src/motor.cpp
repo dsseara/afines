@@ -490,7 +490,7 @@ void motor::step_onehead(int hd)
     array<double, 2> hpos_new = generate_off_pos(hd);
     double off_prob = metropolis_prob(hd, {0,0}, hpos_new, at_barbed_end[hd] ? kend : koff);
 
-    double off_rate = at_barbed_end[hd] ? kend : koff
+    double off_rate = at_barbed_end[hd] ? kend : koff;
 
     if (tension > 0)
         off_prob *= (off_rate * exp(tension*catch_length/temperature) + koff_slip * exp(tension*slip_length/temperature));
