@@ -31,9 +31,9 @@ motor::motor( array<double, 3> pos,
         double v0,
         double stiffness,
         double max_ext_ratio,
-        double ron, double roff, double rend,
+        double ron, double roff, double roffslip, double rend,
         double fstall, double rcut,
-        double vis, double catchlength,
+        double vis, double catchlength, double sliplength,
         double fractureforce, string bc) {
 
     vs          = v0;
@@ -43,12 +43,14 @@ motor::motor( array<double, 3> pos,
     max_bind_dist = rcut;
 
     catch_length = catchlength; // Characteristic catch-bond length. See Guo, PNAS 2006
+    slip_length = sliplength; // Characteristic slip-bond length. See Guo, PNAS 2006
     fracture_force = fractureforce; // force beyond which head detaches with prob=1
 
     mld         = mlen;
     dt          = delta_t;
     kon         = ron*dt;
     koff        = roff*dt;
+    koff_slip   = roffslip*dt; // off rate of slip pathway
     kend        = rend*dt;
     mphi        = pos[2];
     state       = mystate;
@@ -133,7 +135,7 @@ motor::motor( array<double, 4> pos,
         double v0,
         double stiffness,
         double max_ext_ratio,
-        double ron, double roff, double rend,
+        double ron, double roff, double roffslip, double rend,
         double fstall, double rcut,
         double vis, double catchlength,
         double fractureforce, string bc) {
@@ -146,12 +148,14 @@ motor::motor( array<double, 4> pos,
     max_bind_dist = rcut;
 
     catch_length = catchlength; // Characteristic catch-bond length. See Guo, PNAS 2006
+    slip_length = sliplength; // Characteristic slip-bond length. See Guo, PNAS 2006
     fracture_force = fractureforce; // force beyond which head detaches with prob=1
 
     mld         = mlen;
     dt          = delta_t;
     kon         = ron*dt;
     koff        = roff*dt;
+    koff_slip   = roffslip*dt;
     kend        = rend*dt;
 
     state       = mystate;

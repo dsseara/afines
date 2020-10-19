@@ -55,11 +55,11 @@ int main(int argc, char* argv[]){
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, link_fracture_force;
 
     // Active motor (i.e. myosin) parameters
-    double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_motor_lcatch, a_m_kon, a_m_kend, a_m_koff, a_m_stall, a_m_cut, a_m_fracture_force;
+    double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_motor_lcatch, a_motor_lslip, a_m_kon, a_m_kend, a_m_koff, a_m_koff_slip, a_m_stall, a_m_cut, a_m_fracture_force;
     string a_motor_pos_str;
 
     // Passive motor (i.e. cross-linkers) parameters
-    double p_motor_length, p_motor_v, p_motor_density, p_motor_stiffness, p_motor_lcatch, p_m_kon, p_m_kend, p_m_koff, p_m_stall, p_m_cut, p_m_fracture_force;
+    double p_motor_length, p_motor_v, p_motor_density, p_motor_stiffness, p_motor_lcatch, p_motor_lslip, p_m_kon, p_m_kend, p_m_koff, p_m_koff_slip, p_m_stall, p_m_cut, p_m_fracture_force;
     string p_motor_pos_str;
 
     // Input configuration
@@ -123,6 +123,7 @@ int main(int argc, char* argv[]){
 
         ("a_m_kon", po::value<double>(&a_m_kon)->default_value(1),"active motor on rate")
         ("a_m_koff", po::value<double>(&a_m_koff)->default_value(0.1),"active motor off rate")
+        ("a_m_koff_slip", po::value<double>(&a_m_koff_slip)->default_value(0),"active motor off rate for slip pathway")
         ("a_m_kend", po::value<double>(&a_m_kend)->default_value(0.1),"active motor off rate at filament end")
         ("a_motor_length", po::value<double>(&a_motor_length)->default_value(0.4),"active motor rest length (um)")
         ("a_motor_stiffness", po::value<double>(&a_motor_stiffness)->default_value(1),"active motor spring stiffness (pN/um)")
@@ -131,10 +132,12 @@ int main(int argc, char* argv[]){
         ("a_m_stall", po::value<double>(&a_m_stall)->default_value(10),"force beyond which motors don't walk (pN)")
         ("a_m_cut", po::value<double>(&a_m_cut)->default_value(0.063),"cutoff distance for binding (um)")
         ("a_motor_lcatch", po::value<double>(&a_motor_lcatch)->default_value(0.0016),"characteristic catch length for single motor head (um)")
+        ("a_motor_lslip", po::value<double>(&a_motor_lslip)->default_value(0.0016),"characteristic slip length for single motor head (um)")
         ("a_m_fracture_force", po::value<double>(&a_m_fracture_force)->default_value(1), "tension force beyond which an amotor head detaches with probability 1 (pN)")
 
         ("p_m_kon", po::value<double>(&p_m_kon)->default_value(1),"passive motor on rate")
         ("p_m_koff", po::value<double>(&p_m_koff)->default_value(0.1),"passive motor off rate")
+        ("p_m_koff_slip", po::value<double>(&p_m_koff_slip)->default_value(0),"passive motor off rate for slip pathway")
         ("p_m_kend", po::value<double>(&p_m_kend)->default_value(0.1),"passive motor off rate at filament end")
         ("p_motor_length", po::value<double>(&p_motor_length)->default_value(0.150),"passive motor rest length (um) (default: filamin)")
         ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(1),"passive motor spring stiffness (pN/um)")
@@ -143,6 +146,7 @@ int main(int argc, char* argv[]){
         ("p_m_stall", po::value<double>(&p_m_stall)->default_value(0),"force beyond which xlinks don't walk (pN)")
         ("p_m_cut", po::value<double>(&p_m_cut)->default_value(0.063),"cutoff distance for binding (um)")
         ("p_motor_lcatch", po::value<double>(&p_motor_lcatch)->default_value(0.0016),"characteristic catch length for single motor head (um)")
+        ("p_motor_lslip", po::value<double>(&p_motor_lslip)->default_value(0.0016),"characteristic slip length for single motor head (um)")
         ("p_m_fracture_force", po::value<double>(&p_m_fracture_force)->default_value(1), "tension force beyond which a pmotor detaches with probability 1 (pN)")
 
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
@@ -358,12 +362,12 @@ int main(int argc, char* argv[]){
 
     if (a_motor_pos_vec.size() == 0 && a_motor_in.size() == 0)
         myosins = new motor_ensemble( a_motor_density, {xrange, yrange}, dt, temperature,
-                a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
-                a_m_kend, a_m_stall, a_m_cut, viscosity, a_motor_lcatch, a_m_fracture_force, a_motor_position_arrs, bnd_cnd);
+                a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff, a_m_koff_slip,
+                a_m_kend, a_m_stall, a_m_cut, viscosity, a_motor_lcatch, a_motor_lslip, a_m_fracture_force, a_motor_position_arrs, bnd_cnd);
     else
         myosins = new motor_ensemble( a_motor_pos_vec, {xrange, yrange}, dt, temperature,
-                a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
-                a_m_kend, a_m_stall, a_m_cut, viscosity, a_motor_lcatch, a_m_fracture_force, bnd_cnd);
+                a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff, a_m_koff_slip,
+                a_m_kend, a_m_stall, a_m_cut, viscosity, a_motor_lcatch, a_motor_lslip, a_m_fracture_force, bnd_cnd);
     if (dead_head_flag) myosins->kill_heads(dead_head);
 
     cout<<"Adding passive motors (crosslinkers) ...\n";
@@ -371,12 +375,12 @@ int main(int argc, char* argv[]){
 
     if(p_motor_pos_vec.size() == 0 && p_motor_in.size() == 0)
         crosslks = new motor_ensemble( p_motor_density, {xrange, yrange}, dt, temperature,
-                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff,
-                p_m_kend, p_m_stall, p_m_cut, viscosity, p_motor_lcatch, p_m_fracture_force, p_motor_position_arrs, bnd_cnd);
+                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff, p_m_koff_slip,
+                p_m_kend, p_m_stall, p_m_cut, viscosity, p_motor_lcatch, p_motor_lslip, p_m_fracture_force, p_motor_position_arrs, bnd_cnd);
     else
         crosslks = new motor_ensemble( p_motor_pos_vec, {xrange, yrange}, dt, temperature,
-                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff,
-                p_m_kend, p_m_stall, p_m_cut, viscosity, p_motor_lcatch, p_m_fracture_force, bnd_cnd);
+                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff, p_m_koff_slip,
+                p_m_kend, p_m_stall, p_m_cut, viscosity, p_motor_lcatch, p_motor_lslip, p_m_fracture_force, bnd_cnd);
 
     if (p_dead_head_flag) crosslks->kill_heads(p_dead_head);
 
