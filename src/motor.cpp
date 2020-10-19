@@ -137,7 +137,7 @@ motor::motor( array<double, 4> pos,
         double max_ext_ratio,
         double ron, double roff, double roffslip, double rend,
         double fstall, double rcut,
-        double vis, double catchlength,
+        double vis, double catchlength, double sliplength,
         double fractureforce, string bc) {
 
     vs          = v0;
