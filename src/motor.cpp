@@ -268,7 +268,7 @@ void motor::set_shear(double gamma)
 double motor::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> newpos, double maxprob)
 {
 
-    double prob = maxprob;
+    double prob = 1;
     double stretch  = dist_bc(BC, newpos[0] - hx[pr(hd)], newpos[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld;
     double delE = 0.5*mk*stretch*stretch - this->get_stretching_energy();
 
@@ -327,7 +327,7 @@ bool motor::attach(int hd)
                 if (proposed_tension < 0)
                     proposed_tension = 0;
 
-                not_off_prob += metropolis_prob(hd, it->second, intPoint, kon); // * exp(proposed_tension*catch_length/temperature);
+                not_off_prob += kon * metropolis_prob(hd, it->second, intPoint, kon); // * exp(proposed_tension*catch_length/temperature);
 
                 prob_attach[hd] = not_off_prob;
                 prob_detach[hd] = -1;
@@ -490,8 +490,10 @@ void motor::step_onehead(int hd)
     array<double, 2> hpos_new = generate_off_pos(hd);
     double off_prob = metropolis_prob(hd, {0,0}, hpos_new, at_barbed_end[hd] ? kend : koff);
 
+    double off_rate = at_barbed_end[hd] ? kend : koff
+
     if (tension > 0)
-        off_prob *= exp(tension*catch_length/temperature);
+        off_prob *= (off_rate * exp(tension*catch_length/temperature) + koff_slip * exp(tension*slip_length/temperature));
 
     if (tension > fracture_force)
         off_prob = 1.0;
